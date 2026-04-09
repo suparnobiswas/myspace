@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Attendance App</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+  <style>
+    :root, [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+      --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+      --space-12: 3rem; --space-16: 4rem;
+      --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-surface-2: #fbfbf9;
+      --color-surface-offset: #edeae5; --color-border: #d4d1ca; --color-divider: #dcd9d5;
+      --color-text: #28251d; --color-text-muted: #67655f; --color-text-faint: #9e9c95;
+      --color-primary: #01696f; --color-primary-hover: #0c4e54; --color-primary-highlight: #cedcd8;
+      --color-success: #437a22; --color-warning: #964219; --color-error: #a12c7b; --color-blue: #006494;
+      --radius-sm: 0.375rem; --radius-md: 0.5rem; --radius-lg: 0.75rem; --radius-xl: 1rem; --radius-full: 999px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.06); --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-body: 'Satoshi', Inter, sans-serif;
+      --font-display: 'Satoshi', Inter, sans-serif;
+    }
+    [data-theme="dark"] {
+      --color-bg: #171614; --color-surface: #1c1b19; --color-surface-2: #201f1d;
+      --color-surface-offset: #22211f; --color-border: #393836; --color-divider: #262523;
+      --color-text: #ece9e2; --color-text-muted: #b8b5ae; --color-text-faint: #7f7b74;
+      --color-primary: #4f98a3; --color-primary-hover: #227f8b; --color-primary-highlight: #313b3b;
+      --color-success: #6daa45; --color-warning: #bb653b; --color-error: #d163a7; --color-blue: #5591c7;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.25); --shadow-md: 0 8px 24px rgba(0,0,0,0.32);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: var(--color-text);
+      background: var(--color-bg);
+    }
+    button, input, textarea, select { font: inherit; }
+    button {
+      border: none; cursor: pointer; border-radius: var(--radius-md);
+      transition: transform var(--transition), background var(--transition), color var(--transition), border-color var(--transition);
+    }
+    button:active { transform: scale(0.98); }
+    input, textarea, select {
+      width: 100%; padding: 0.88rem 0.95rem; border-radius: var(--radius-md);
+      border: 1px solid rgba(40, 37, 29, 0.14); background: var(--color-surface-2); color: var(--color-text);
+    }
+    [data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select {
+      border-color: rgba(255,255,255,0.12);
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    .app-shell {
+      display: grid; grid-template-columns: 280px 1fr; min-height: 100vh;
+    }
+    .sidebar {
+      background: var(--color-surface); border-right: 1px solid var(--color-divider);
+      padding: var(--space-6) var(--space-4); display: flex; flex-direction: column; gap: var(--space-5);
+      position: sticky; top: 0; height: 100vh;
+    }
+    .brand { display: flex; align-items: center; gap: var(--space-3); }
+    .logo {
+      width: 42px; height: 42px; border-radius: 14px; background: var(--color-primary-highlight);
+      display: grid; place-items: center; color: var(--color-primary);
+    }
+    .brand-text h1 { font-size: var(--text-lg); margin: 0; }
+    .brand-text p { margin: 0; color: var(--color-text-muted); font-size: var(--text-xs); }
+    .nav-links { display: grid; gap: var(--space-2); }
+    .nav-btn {
+      display: flex; align-items: center; gap: var(--space-3); width: 100%; text-align: left;
+      padding: 0.9rem 1rem; background: transparent; color: var(--color-text);
+      border: 1px solid transparent;
+      min-height: 46px;
+    }
+    .nav-btn.active, .nav-btn:hover { background: var(--color-surface-2); border-color: var(--color-border); }
+    .sidebar-footer { margin-top: auto; display: grid; gap: var(--space-2); }
+    .main-panel { padding: var(--space-6); }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-6);
+      flex-wrap: wrap;
+    }
+    .title-wrap h2 { margin: 0; font-size: var(--text-xl); }
+    .title-wrap p { margin: 0.2rem 0 0; color: var(--color-text-muted); }
+    .actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+    .btn-primary, .btn-secondary, .btn-danger {
+      padding: 0.85rem 1rem; min-height: 44px;
+    }
+    .btn-primary { background: var(--color-primary); color: #fff; }
+    .btn-primary:hover { background: var(--color-primary-hover); }
+    .btn-secondary { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+    .btn-danger { background: var(--color-error); color: #fff; }
+    .panel-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--space-4); }
+    .card {
+      background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-xl);
+      padding: var(--space-5); box-shadow: var(--shadow-sm);
+    }
+    .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+    .metric { display: grid; gap: var(--space-2); }
+    .metric strong { font-size: var(--text-xl); font-variant-numeric: tabular-nums; }
+    .muted { color: var(--color-text-muted); }
+    .small { font-size: var(--text-sm); }
+    .tiny { font-size: var(--text-xs); color: var(--color-text-muted); }
+    .hidden { display: none !important; }
+    .auth-wrap {
+      min-height: 100vh; display: grid; place-items: center; padding: var(--space-6);
+      background: radial-gradient(circle at top right, var(--color-primary-highlight), transparent 30%), var(--color-bg);
+    }
+    .auth-card {
+      width: min(100%, 470px); background: var(--color-surface); border: 1px solid var(--color-border);
+      border-radius: 1.25rem; box-shadow: var(--shadow-md); padding: var(--space-6);
+    }
+    .auth-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-2); margin-bottom: var(--space-5); }
+    .auth-tab { padding: 0.8rem; background: var(--color-surface-2); color: var(--color-text-muted); }
+    .auth-tab.active { background: var(--color-primary); color: #fff; }
+    .form-grid { display: grid; gap: var(--space-4); }
+    label { display: grid; gap: var(--space-2); font-size: var(--text-sm); font-weight: 500; }
+    .section-view { display: none; }
+    .section-view.active { display: block; }
+    .calendar-head, .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: var(--space-2); }
+    .day-label, .day-cell {
+      background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      min-height: 78px; padding: var(--space-2);
+    }
+    .day-label { min-height: auto; text-align: center; font-size: var(--text-xs); font-weight: 700; color: var(--color-text-muted); }
+    .day-cell.today { outline: 2px solid var(--color-primary); }
+    .day-cell.logged { background: color-mix(in srgb, var(--color-primary-highlight) 75%, var(--color-surface-2)); }
+    .check-list { display: grid; gap: var(--space-3); }
+    .check-item {
+      display: flex; align-items: flex-start; gap: var(--space-3); padding: var(--space-3); background: var(--color-surface-2);
+      border-radius: var(--radius-md); border: 1px solid var(--color-border);
+    }
+    .check-item input { width: 18px; height: 18px; margin-top: 2px; }
+    .list-stack { display: grid; gap: var(--space-3); margin-top: var(--space-4); }
+    .pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.7rem; border-radius: var(--radius-full); font-size: var(--text-xs); background: var(--color-primary-highlight); color: var(--color-primary); }
+    .row { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+    .row > * { flex: 1 1 180px; }
+    .invoice-box { background: var(--color-surface-2); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); }
+    .table-like { display: grid; gap: var(--space-2); }
+    .table-row {
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: var(--space-2);
+      padding: var(--space-3); background: var(--color-surface-2); border-radius: var(--radius-md); font-size: var(--text-sm);
+    }
+    .kb-item, .todo-item, .attendance-item { padding: var(--space-3); border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-2); }
+    .tictactoe {
+      display: grid; grid-template-columns: repeat(3, minmax(72px, 1fr)); gap: var(--space-2); max-width: 260px;
+    }
+    .ttt-cell {
+      aspect-ratio: 1; background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+      font-size: 2rem; font-weight: 700; color: var(--color-primary);
+    }
+    .note-box { min-height: 140px; }
+    .menu-toggle { display: none; }
+    .empty-state { color: var(--color-text-muted); padding: var(--space-4); border: 1px dashed var(--color-border); border-radius: var(--radius-lg); }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-success); display: inline-block; }
+    .top-note { background: var(--color-primary-highlight); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-4); }
+    .link-btn { background: none; color: var(--color-primary); padding: 0; }
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; inset: 0 auto 0 0; width: min(86vw, 300px); transform: translateX(-102%); transition: transform var(--transition); z-index: 50;
+        box-shadow: var(--shadow-md);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .menu-toggle { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; background: var(--color-surface); border: 1px solid var(--color-border); }
+      .panel-grid { grid-template-columns: 1fr; }
+      .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 { grid-column: auto; }
+      .table-row { grid-template-columns: 1fr 1fr; }
+      .calendar-head, .calendar-grid { gap: 0.35rem; }
+      .day-cell { min-height: 64px; font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="authView" class="auth-wrap">
+    <div class="auth-card">
+      <div class="brand" style="margin-bottom: 1rem;">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="StaffTrack logo">
+            <rect x="9" y="10" width="20" height="20" rx="5" stroke="currentColor" stroke-width="5"/>
+            <rect x="35" y="10" width="20" height="44" rx="5" stroke="currentColor" stroke-width="5"/>
+            <rect x="9" y="36" width="20" height="18" rx="5" stroke="currentColor" stroke-width="5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>StaffTrack</h1>
+          <p>Attendance and hour tracker</p>
+        </div>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="signupTab" type="button">Sign up</button>
+        <button class="auth-tab" id="loginTab" type="button">Login</button>
+      </div>
+      <form id="signupForm" class="form-grid">
+        <label>Full name<input type="text" id="signupName" placeholder="Enter full name" required></label>
+        <label>Email<input type="email" id="signupEmail" placeholder="name@example.com" required></label>
+        <label>Password<input type="password" id="signupPassword" placeholder="Create password" required></label>
+        <label>Role<input type="text" id="signupRole" placeholder="Staff / Manager" required></label>
+        <button type="submit" class="btn-primary">Create account</button>
+        <div class="tiny">Demo app note: your account is kept only in this page while it remains open.</div>
+      </form>
+      <form id="loginForm" class="form-grid hidden">
+        <label>Email<input type="email" id="loginEmail" placeholder="name@example.com" required></label>
+        <label>Password<input type="password" id="loginPassword" placeholder="Enter password" required></label>
+        <button type="submit" class="btn-primary">Login now</button>
+        <button type="button" class="btn-secondary" id="fillDemoBtn">Use demo account</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="9" y="10" width="20" height="20" rx="5" stroke="currentColor" stroke-width="5"/>
+            <rect x="35" y="10" width="20" height="44" rx="5" stroke="currentColor" stroke-width="5"/>
+            <rect x="9" y="36" width="20" height="18" rx="5" stroke="currentColor" stroke-width="5"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>StaffTrack</h1>
+          <p id="userBadge">Signed out</p>
+        </div>
+      </div>
+      <nav class="nav-links" aria-label="Main navigation">
+        <button class="nav-btn active" data-view="dashboard">Dashboard</button>
+        <button class="nav-btn" data-view="attendance">Attendance</button>
+        <button class="nav-btn" data-view="calendar">Calendar</button>
+        <button class="nav-btn" data-view="todo">To do</button>
+        <button class="nav-btn" data-view="notes">Notes</button>
+        <button class="nav-btn" data-view="invoice">Invoice</button>
+        <button class="nav-btn" data-view="knowledge">Knowledge base</button>
+        <button class="nav-btn" data-view="refreshment">Refreshment</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-secondary" id="themeToggle" type="button">Toggle theme</button>
+        <button class="btn-secondary" id="logoutBtn" type="button">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <div class="topbar">
+        <div class="actions">
+          <button class="menu-toggle" id="menuToggle" type="button">☰</button>
+          <div class="title-wrap">
+            <h2 id="pageTitle">Dashboard</h2>
+            <p id="pageSubtitle">Daily attendance, hours, tasks and team notes in one place.</p>
+          </div>
+        </div>
+        <div class="actions">
+          <span class="pill"><span class="status-dot"></span><span id="todayDate"></span></span>
+          <button class="btn-primary" id="quickMarkBtn" type="button">Mark attendance today</button>
+        </div>
+      </div>
+
+      <section id="dashboard" class="section-view active">
+        <div class="top-note small">This app includes signup/login, attendance check-in, a monthly calendar, to-do list with check boxes, notes, invoice builder, knowledge base ideas board, and a simple tic-tac-toe refreshment game.</div>
+        <div class="panel-grid" style="margin-top: 1rem;">
+          <div class="card span-4 metric"><span class="muted">Days present</span><strong id="metricPresent">0</strong><span class="tiny">Marked from the attendance page</span></div>
+          <div class="card span-4 metric"><span class="muted">Total hours</span><strong id="metricHours">0</strong><span class="tiny">Tracked from all submitted entries</span></div>
+          <div class="card span-4 metric"><span class="muted">Open tasks</span><strong id="metricTasks">0</strong><span class="tiny">Unchecked to-do items</span></div>
+          <div class="card span-7">
+            <h3 style="margin-top:0;">Today overview</h3>
+            <div id="todayStatus" class="list-stack"></div>
+          </div>
+          <div class="card span-5">
+            <h3 style="margin-top:0;">Recent ideas</h3>
+            <div id="dashboardIdeas" class="list-stack"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="attendance" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-5">
+            <h3 style="margin-top:0;">Daily attendance</h3>
+            <div class="form-grid">
+              <label>Date<input type="date" id="attendanceDate"></label>
+              <div class="row">
+                <label>Clock in<input type="time" id="clockIn"></label>
+                <label>Clock out<input type="time" id="clockOut"></label>
+              </div>
+              <label>Status
+                <select id="attendanceStatus">
+                  <option value="Present">Present</option>
+                  <option value="Remote">Remote</option>
+                  <option value="Half Day">Half Day</option>
+                  <option value="Leave">Leave</option>
+                </select>
+              </label>
+              <label>Work note<textarea id="attendanceNote" placeholder="What did you work on today?"></textarea></label>
+              <button class="btn-primary" id="saveAttendanceBtn" type="button">Save attendance</button>
+            </div>
+          </div>
+          <div class="card span-7">
+            <h3 style="margin-top:0;">Attendance log</h3>
+            <div id="attendanceList" class="list-stack"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="calendar" class="section-view">
+        <div class="card">
+          <div class="topbar" style="margin-bottom:1rem;">
+            <div>
+              <h3 style="margin:0;">Attendance calendar</h3>
+              <p class="muted small" style="margin:0.2rem 0 0;">Logged attendance dates are highlighted.</p>
+            </div>
+            <div class="actions">
+              <button class="btn-secondary" id="prevMonth" type="button">Previous</button>
+              <span class="pill" id="calendarTitle"></span>
+              <button class="btn-secondary" id="nextMonth" type="button">Next</button>
+            </div>
+          </div>
+          <div class="calendar-head">
+            <div class="day-label">Sun</div><div class="day-label">Mon</div><div class="day-label">Tue</div><div class="day-label">Wed</div><div class="day-label">Thu</div><div class="day-label">Fri</div><div class="day-label">Sat</div>
+          </div>
+          <div class="calendar-grid" id="calendarGrid" style="margin-top:0.5rem;"></div>
+        </div>
+      </section>
+
+      <section id="todo" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-5">
+            <h3 style="margin-top:0;">Add to-do item</h3>
+            <div class="form-grid">
+              <label>Task title<input type="text" id="todoTitle" placeholder="Follow up client report"></label>
+              <label>Details<textarea id="todoDetails" placeholder="Optional details"></textarea></label>
+              <button class="btn-primary" id="addTodoBtn" type="button">Add task</button>
+            </div>
+          </div>
+          <div class="card span-7">
+            <h3 style="margin-top:0;">Checklist</h3>
+            <div id="todoList" class="check-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="notes" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Personal note area</h3>
+            <label>Daily notes<textarea id="notesArea" class="note-box" placeholder="Write reminders, updates, or meeting notes here."></textarea></label>
+            <div class="actions" style="margin-top:1rem;">
+              <button class="btn-primary" id="saveNotesBtn" type="button">Save notes</button>
+            </div>
+          </div>
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Saved preview</h3>
+            <div id="notesPreview" class="empty-state">No notes saved yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="invoice" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Hour submission invoice</h3>
+            <div class="form-grid">
+              <div class="row">
+                <label>Client / Department<input type="text" id="invoiceClient" placeholder="Internal Admin"></label>
+                <label>Hourly rate<input type="number" id="invoiceRate" placeholder="10"></label>
+              </div>
+              <label>Invoice date<input type="date" id="invoiceDate"></label>
+              <button class="btn-primary" id="generateInvoiceBtn" type="button">Generate invoice</button>
+            </div>
+          </div>
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Invoice summary</h3>
+            <div id="invoiceSummary" class="invoice-box">No invoice generated yet.</div>
+          </div>
+          <div class="card span-12">
+            <h3 style="margin-top:0;">Hour entries used in invoice</h3>
+            <div id="invoiceTable" class="table-like"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="knowledge" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-5">
+            <h3 style="margin-top:0;">Post new idea</h3>
+            <div class="form-grid">
+              <label>Idea title<input type="text" id="ideaTitle" placeholder="Improve shift reminder message"></label>
+              <label>Description<textarea id="ideaText" placeholder="Describe the idea for the team knowledge base."></textarea></label>
+              <button class="btn-primary" id="postIdeaBtn" type="button">Post idea</button>
+            </div>
+          </div>
+          <div class="card span-7">
+            <h3 style="margin-top:0;">Knowledge base board</h3>
+            <div id="ideaList" class="list-stack"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="refreshment" class="section-view">
+        <div class="panel-grid">
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Break time tic-tac-toe</h3>
+            <p class="muted small">Play a simple game during refreshment time. X starts first.</p>
+            <div class="tictactoe" id="board"></div>
+            <div class="actions" style="margin-top:1rem;">
+              <span class="pill" id="gameStatus">Player X turn</span>
+              <button class="btn-secondary" id="resetGameBtn" type="button">Reset game</button>
+            </div>
+          </div>
+          <div class="card span-6">
+            <h3 style="margin-top:0;">Refreshment note</h3>
+            <div class="empty-state">Use this page as a small morale break. You can keep attendance work on one side and a simple fun activity on the other.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      users: [],
+      currentUser: null,
+      attendance: [],
+      todos: [
+        { id: crypto.randomUUID(), title: 'Review today attendance', details: 'Confirm check-in and check-out before leaving.', done: false },
+        { id: crypto.randomUUID(), title: 'Send work summary', details: 'Add key task note in attendance note area.', done: true }
+      ],
+      notes: '',
+      ideas: [
+        { id: crypto.randomUUID(), title: 'Weekly highlights board', text: 'Share one lesson learned at the end of each week.', author: 'System' }
+      ],
+      calendarDate: new Date(),
+      game: { board: Array(9).fill(''), current: 'X', over: false }
+    };
+
+    const authView = document.getElementById('authView');
+    const appView = document.getElementById('appView');
+    const signupTab = document.getElementById('signupTab');
+    const loginTab = document.getElementById('loginTab');
+    const signupForm = document.getElementById('signupForm');
+    const loginForm = document.getElementById('loginForm');
+    const userBadge = document.getElementById('userBadge');
+    const todayDate = document.getElementById('todayDate');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    const navButtons = [...document.querySelectorAll('.nav-btn')];
+    const views = [...document.querySelectorAll('.section-view')];
+    const sidebar = document.getElementById('sidebar');
+
+    const setAuthMode = (mode) => {
+      const signup = mode === 'signup';
+      signupTab.classList.toggle('active', signup);
+      loginTab.classList.toggle('active', !signup);
+      signupForm.classList.toggle('hidden', !signup);
+      loginForm.classList.toggle('hidden', signup);
+    };
+
+    signupTab.addEventListener('click', () => setAuthMode('signup'));
+    loginTab.addEventListener('click', () => setAuthMode('login'));
+
+    signupForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = {
+        name: document.getElementById('signupName').value.trim(),
+        email: document.getElementById('signupEmail').value.trim().toLowerCase(),
+        password: document.getElementById('signupPassword').value,
+        role: document.getElementById('signupRole').value.trim()
+      };
+      if (!user.name || !user.email || !user.password || !user.role) return;
+      const exists = state.users.some(u => u.email === user.email);
+      if (exists) { alert('This email is already registered. Please login.'); return; }
+      state.users.push(user);
+      state.currentUser = user;
+      enterApp();
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+      const password = document.getElementById('loginPassword').value;
+      const user = state.users.find(u => u.email === email && u.password === password);
+      if (!user) { alert('User not found. Please sign up first or use the demo account.'); return; }
+      state.currentUser = user;
+      enterApp();
+    });
+
+    document.getElementById('fillDemoBtn').addEventListener('click', () => {
+      let demo = state.users.find(u => u.email === 'demo@stafftrack.app');
+      if (!demo) {
+        demo = { name: 'Demo Staff', email: 'demo@stafftrack.app', password: 'demo123', role: 'Staff' };
+        state.users.push(demo);
+      }
+      document.getElementById('loginEmail').value = demo.email;
+      document.getElementById('loginPassword').value = demo.password;
+    });
+
+    function enterApp() {
+      authView.classList.add('hidden');
+      appView.classList.remove('hidden');
+      userBadge.textContent = `${state.currentUser.name} · ${state.currentUser.role}`;
+      const today = new Date();
+      const iso = today.toISOString().split('T')[0];
+      todayDate.textContent = today.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('attendanceDate').value = iso;
+      document.getElementById('invoiceDate').value = iso;
+      renderAll();
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      state.currentUser = null;
+      authView.classList.remove('hidden');
+      appView.classList.add('hidden');
+      setAuthMode('login');
+    });
+
+    navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+
+    function switchView(viewName) {
+      navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewName));
+      views.forEach(view => view.classList.toggle('active', view.id === viewName));
+      const labels = {
+        dashboard: ['Dashboard', 'Daily attendance, hours, tasks and team notes in one place.'],
+        attendance: ['Attendance', 'Register login time, logout time, status and work note.'],
+        calendar: ['Calendar', 'Check attendance visually on the monthly calendar.'],
+        todo: ['To do', 'Track personal tasks with a checkbox checklist.'],
+        notes: ['Notes', 'Keep quick notes and reminders for your workday.'],
+        invoice: ['Invoice', 'Generate hour submission summary for client or department.'],
+        knowledge: ['Knowledge base', 'Post new ideas and share internal knowledge.'],
+        refreshment: ['Refreshment', 'Take a small break with a simple tic-tac-toe game.']
+      };
+      pageTitle.textContent = labels[viewName][0];
+      pageSubtitle.textContent = labels[viewName][1];
+      sidebar.classList.remove('open');
+    }
+
+    document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    });
+
+    function hoursBetween(start, end) {
+      if (!start || !end) return 0;
+      const [sh, sm] = start.split(':').map(Number);
+      const [eh, em] = end.split(':').map(Number);
+      const mins = (eh * 60 + em) - (sh * 60 + sm);
+      return Math.max(0, mins / 60);
+    }
+
+    document.getElementById('saveAttendanceBtn').addEventListener('click', () => {
+      const date = document.getElementById('attendanceDate').value;
+      const clockIn = document.getElementById('clockIn').value;
+      const clockOut = document.getElementById('clockOut').value;
+      const status = document.getElementById('attendanceStatus').value;
+      const note = document.getElementById('attendanceNote').value.trim();
+      if (!date) return alert('Please select a date.');
+      const entry = {
+        id: crypto.randomUUID(),
+        date, clockIn, clockOut, status, note,
+        hours: Number(hoursBetween(clockIn, clockOut).toFixed(2))
+      };
+      state.attendance = state.attendance.filter(item => item.date !== date);
+      state.attendance.unshift(entry);
+      renderAll();
+      alert('Attendance saved.');
+    });
+
+    document.getElementById('quickMarkBtn').addEventListener('click', () => {
+      const now = new Date();
+      const date = now.toISOString().split('T')[0];
+      const time = now.toTimeString().slice(0,5);
+      if (!state.attendance.find(a => a.date === date)) {
+        state.attendance.unshift({ id: crypto.randomUUID(), date, clockIn: time, clockOut: '', status: 'Present', note: 'Quick marked from dashboard.', hours: 0 });
+      }
+      renderAll();
+      switchView('attendance');
+    });
+
+    document.getElementById('addTodoBtn').addEventListener('click', () => {
+      const title = document.getElementById('todoTitle').value.trim();
+      const details = document.getElementById('todoDetails').value.trim();
+      if (!title) return alert('Please enter a task title.');
+      state.todos.unshift({ id: crypto.randomUUID(), title, details, done: false });
+      document.getElementById('todoTitle').value = '';
+      document.getElementById('todoDetails').value = '';
+      renderTodos();
+      renderDashboard();
+    });
+
+    document.getElementById('saveNotesBtn').addEventListener('click', () => {
+      state.notes = document.getElementById('notesArea').value.trim();
+      renderNotes();
+    });
+
+    document.getElementById('generateInvoiceBtn').addEventListener('click', renderInvoice);
+
+    document.getElementById('postIdeaBtn').addEventListener('click', () => {
+      const title = document.getElementById('ideaTitle').value.trim();
+      const text = document.getElementById('ideaText').value.trim();
+      if (!title || !text) return alert('Please add both idea title and description.');
+      state.ideas.unshift({ id: crypto.randomUUID(), title, text, author: state.currentUser?.name || 'User' });
+      document.getElementById('ideaTitle').value = '';
+      document.getElementById('ideaText').value = '';
+      renderIdeas();
+      renderDashboard();
+    });
+
+    document.getElementById('prevMonth').addEventListener('click', () => { state.calendarDate.setMonth(state.calendarDate.getMonth() - 1); renderCalendar(); });
+    document.getElementById('nextMonth').addEventListener('click', () => { state.calendarDate.setMonth(state.calendarDate.getMonth() + 1); renderCalendar(); });
+
+    function renderAttendance() {
+      const wrap = document.getElementById('attendanceList');
+      if (!state.attendance.length) {
+        wrap.innerHTML = '<div class="empty-state">No attendance added yet.</div>';
+        return;
+      }
+      wrap.innerHTML = state.attendance.map(item => `
+        <div class="attendance-item">
+          <div class="row">
+            <strong>${item.date}</strong>
+            <span class="pill">${item.status}</span>
+            <span class="pill">${item.hours || 0} hr</span>
+          </div>
+          <div class="small muted" style="margin-top:0.45rem;">${item.clockIn || '--:--'} to ${item.clockOut || '--:--'}</div>
+          <div class="small" style="margin-top:0.45rem;">${item.note || 'No note added.'}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderTodos() {
+      const wrap = document.getElementById('todoList');
+      if (!state.todos.length) {
+        wrap.innerHTML = '<div class="empty-state">No tasks yet.</div>';
+        return;
+      }
+      wrap.innerHTML = state.todos.map(item => `
+        <label class="check-item">
+          <input type="checkbox" ${item.done ? 'checked' : ''} data-todo-id="${item.id}">
+          <span>
+            <strong style="display:block; ${item.done ? 'text-decoration:line-through;' : ''}">${item.title}</strong>
+            <span class="small muted">${item.details || 'No extra details.'}</span>
+          </span>
+        </label>
+      `).join('');
+      wrap.querySelectorAll('input[type="checkbox"]').forEach(box => {
+        box.addEventListener('change', () => {
+          const item = state.todos.find(t => t.id === box.dataset.todoId);
+          if (item) item.done = box.checked;
+          renderTodos();
+          renderDashboard();
+        });
+      });
+    }
+
+    function renderNotes() {
+      document.getElementById('notesArea').value = state.notes;
+      document.getElementById('notesPreview').innerHTML = state.notes ? state.notes.replace(/\n/g, '<br>') : 'No notes saved yet.';
+    }
+
+    function renderInvoice() {
+      const rate = Number(document.getElementById('invoiceRate').value || 0);
+      const client = document.getElementById('invoiceClient').value.trim() || 'Internal Department';
+      const date = document.getElementById('invoiceDate').value || new Date().toISOString().split('T')[0];
+      const entries = state.attendance.filter(item => item.hours > 0);
+      const totalHours = entries.reduce((sum, item) => sum + item.hours, 0);
+      const amount = totalHours * rate;
+      document.getElementById('invoiceSummary').innerHTML = `
+        <strong>Invoice for ${client}</strong><br>
+        <span class="small muted">Date: ${date}</span><br><br>
+        <span class="small">Total billable hours: <strong>${totalHours.toFixed(2)}</strong></span><br>
+        <span class="small">Hourly rate: <strong>${rate.toFixed(2)}</strong></span><br>
+        <span class="small">Amount due: <strong>${amount.toFixed(2)}</strong></span>
+      `;
+      const table = document.getElementById('invoiceTable');
+      if (!entries.length) {
+        table.innerHTML = '<div class="empty-state">Add attendance with clock in and clock out to generate billable entries.</div>';
+        return;
+      }
+      table.innerHTML = `
+        <div class="table-row" style="font-weight:700;">
+          <div>Date</div><div>Status</div><div>Hours</div><div>Note</div>
+        </div>
+        ${entries.map(item => `
+          <div class="table-row">
+            <div>${item.date}</div><div>${item.status}</div><div>${item.hours.toFixed(2)}</div><div>${item.note || '-'}</div>
+          </div>
+        `).join('')}
+      `;
+    }
+
+    function renderIdeas() {
+      const wrap = document.getElementById('ideaList');
+      const dashWrap = document.getElementById('dashboardIdeas');
+      if (!state.ideas.length) {
+        wrap.innerHTML = '<div class="empty-state">No ideas posted yet.</div>';
+        dashWrap.innerHTML = '<div class="empty-state">No ideas yet.</div>';
+        return;
+      }
+      const html = state.ideas.map(item => `
+        <div class="kb-item">
+          <strong>${item.title}</strong>
+          <div class="small" style="margin-top:0.35rem;">${item.text}</div>
+          <div class="tiny" style="margin-top:0.45rem;">Posted by ${item.author}</div>
+        </div>
+      `).join('');
+      wrap.innerHTML = html;
+      dashWrap.innerHTML = state.ideas.slice(0,3).map(item => `<div class="kb-item"><strong>${item.title}</strong><div class="tiny" style="margin-top:0.35rem;">${item.author}</div></div>`).join('');
+    }
+
+    function renderDashboard() {
+      const totalPresent = state.attendance.filter(item => item.status !== 'Leave').length;
+      const totalHours = state.attendance.reduce((sum, item) => sum + (item.hours || 0), 0);
+      const openTasks = state.todos.filter(item => !item.done).length;
+      document.getElementById('metricPresent').textContent = totalPresent;
+      document.getElementById('metricHours').textContent = totalHours.toFixed(2);
+      document.getElementById('metricTasks').textContent = openTasks;
+      const today = new Date().toISOString().split('T')[0];
+      const current = state.attendance.find(item => item.date === today);
+      document.getElementById('todayStatus').innerHTML = `
+        <div class="kb-item"><strong>${current ? current.status : 'Not marked yet'}</strong><div class="small muted">${current ? `${current.clockIn || '--:--'} to ${current.clockOut || '--:--'}` : 'Use the attendance page or quick mark button.'}</div></div>
+        <div class="kb-item"><strong>${openTasks} task${openTasks === 1 ? '' : 's'} open</strong><div class="small muted">Stay on top of your checklist.</div></div>
+        <div class="kb-item"><strong>${state.notes ? 'Notes saved' : 'No saved note'}</strong><div class="small muted">${state.notes ? 'Your note area has content.' : 'Use the note area for reminders.'}</div></div>
+      `;
+    }
+
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      const current = new Date(state.calendarDate.getFullYear(), state.calendarDate.getMonth(), 1);
+      document.getElementById('calendarTitle').textContent = current.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+      const startDay = current.getDay();
+      const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+      const today = new Date();
+      const marked = new Set(state.attendance.map(item => item.date));
+      const cells = [];
+      for (let i = 0; i < startDay; i++) cells.push('<div class="day-cell" style="visibility:hidden"></div>');
+      for (let day = 1; day <= daysInMonth; day++) {
+        const cellDate = new Date(current.getFullYear(), current.getMonth(), day);
+        const iso = cellDate.toISOString().split('T')[0];
+        const isToday = iso === today.toISOString().split('T')[0];
+        const classes = ['day-cell'];
+        if (isToday) classes.push('today');
+        if (marked.has(iso)) classes.push('logged');
+        cells.push(`<div class="${classes.join(' ')}"><strong>${day}</strong><div class="tiny">${marked.has(iso) ? 'Logged' : ''}</div></div>`);
+      }
+      grid.innerHTML = cells.join('');
+    }
+
+    function renderGame() {
+      const board = document.getElementById('board');
+      board.innerHTML = state.game.board.map((val, index) => `<button class="ttt-cell" data-index="${index}" type="button">${val}</button>`).join('');
+      board.querySelectorAll('.ttt-cell').forEach(cell => {
+        cell.addEventListener('click', () => handleMove(Number(cell.dataset.index)));
+      });
+      document.getElementById('gameStatus').textContent = state.game.over ? state.game.message : `Player ${state.game.current} turn`;
+    }
+
+    function handleMove(index) {
+      if (state.game.over || state.game.board[index]) return;
+      state.game.board[index] = state.game.current;
+      const wins = [ [0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6] ];
+      const win = wins.find(([a,b,c]) => state.game.board[a] && state.game.board[a] === state.game.board[b] && state.game.board[a] === state.game.board[c]);
+      if (win) {
+        state.game.over = true;
+        state.game.message = `Player ${state.game.current} wins`;
+      } else if (state.game.board.every(Boolean)) {
+        state.game.over = true;
+        state.game.message = 'Match draw';
+      } else {
+        state.game.current = state.game.current === 'X' ? 'O' : 'X';
+      }
+      renderGame();
+    }
+
+    document.getElementById('resetGameBtn').addEventListener('click', () => {
+      state.game = { board: Array(9).fill(''), current: 'X', over: false, message: '' };
+      renderGame();
+    });
+
+    function renderAll() {
+      renderAttendance();
+      renderTodos();
+      renderNotes();
+      renderIdeas();
+      renderDashboard();
+      renderCalendar();
+      renderInvoice();
+      renderGame();
+    }
+
+    renderNotes();
+    renderIdeas();
+    renderGame();
+  </script>
+</body>
+</html>
